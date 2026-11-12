@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Урок-тренажёр: Глава 10. Редактирование аудио и видеофайлов</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #F8FAFC;
+      color: #0F172A;
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+    }
+    .font-mono-timer {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #F1F5F9;
+    }
+    @keyframes pulse-fast {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .animate-pulse-fast {
+      animation: pulse-fast 0.8s infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-blue-100">
+
+  <!-- ==================== HEADER (STATIONARY TOP BAR) ==================== -->
+  <header id="main-header" class="hidden sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        
+        <!-- Left: Badge + Mode -->
+        <div class="flex items-center space-x-2">
+          <button id="badge-11-class" onclick="handleBadgeClick()" title="Кликните 5 раз или нажмите Alt+S для вызова меню учителя" class="px-2.5 py-1 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition active:scale-95 cursor-pointer">
+            11 КЛАСС • ИНФОРМАТИКА
+          </button>
+          <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-[11px] font-semibold rounded-md uppercase tracking-wider">
+            35 МИН
+          </span>
+        </div>
+
+        <!-- Center: Stage Pills -->
+        <div class="flex items-center space-x-1 sm:space-x-1.5 overflow-x-auto custom-scrollbar py-1" id="stage-pills-container">
+          <!-- 10 stage pills generated dynamically -->
+        </div>
+
+        <!-- Right: Mastery Flag, Score & Stage Timer -->
+        <div class="flex items-center space-x-3">
+          <!-- Mastery Flag -->
+          <div id="mastery-flag" class="px-2.5 py-1 rounded-md text-xs font-bold transition-all bg-slate-100 text-slate-500 border border-slate-200">
+            УСВОЕНИЕ: НЕДОСТАТОЧНО (0 БАЛЛОВ)
+          </div>
+
+          <!-- Scores -->
+          <div class="text-right text-xs">
+            <div class="font-bold text-slate-800">Баллы: <span id="header-main-score" class="text-blue-600 font-extrabold text-sm">0</span>/10</div>
+            <div class="text-[11px] text-amber-600 font-semibold">Бонус: <span id="header-bonus-score">+0</span></div>
+          </div>
+
+          <!-- Timer -->
+          <div id="stage-timer-box" class="px-3 py-1 bg-slate-900 text-white rounded-lg font-mono-timer font-bold text-base shadow-inner flex items-center space-x-1">
+            <svg class="w-4 h-4 text-blue-400 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span id="stage-timer-display">03:00</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN CONTENT CONTAINER ==================== -->
+  <main class="flex-grow flex items-center justify-center p-3 sm:p-6 relative">
+
+    <!-- ------------------ 1. WAITING SCREEN ------------------ -->
+    <div id="screen-waiting" class="w-full max-w-3xl bg-white border border-slate-200 rounded-2xl shadow-xl p-6 sm:p-10 text-center relative overflow-hidden my-auto">
+      <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-sky-500"></div>
+      
+      <div class="inline-flex items-center px-3 py-1 bg-blue-50 text-blue-700 font-bold text-xs rounded-full uppercase tracking-wider mb-4">
+        Интерактивный урок-тренажёр • 11 класс
+      </div>
+
+      <h1 class="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">
+        Глава 10. Редактирование аудио и видеофайлов
+      </h1>
+      <p class="text-slate-500 text-sm sm:text-base max-w-xl mx-auto mb-6">
+        Учебник: стр. 184–196. Работа на уроке строго индивидуальная.
+      </p>
+
+      <!-- Nearest Scheduled Start Time -->
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6 max-w-md mx-auto">
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Ближайший автоматический старт по расписанию:</div>
+        <div id="scheduled-start-time" class="text-2xl font-black text-blue-600 font-mono-timer">11:30</div>
+      </div>
+
+      <!-- Giant Countdown Timer -->
+      <div class="mb-8">
+        <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Обратный отсчёт до начала урока:</div>
+        <div id="waiting-countdown" class="text-4xl sm:text-6xl font-black text-slate-900 font-mono-timer tracking-wider bg-slate-900 text-white py-4 px-6 rounded-2xl shadow-inner inline-block min-w-[280px]">
+          00:00:00
+        </div>
+      </div>
+
+      <!-- Student Memo Box -->
+      <div class="text-left bg-amber-50/80 border border-amber-200 rounded-xl p-4 sm:p-5 text-xs sm:text-sm text-amber-900 space-y-2 mb-6">
+        <div class="font-bold text-amber-950 flex items-center space-x-2">
+          <svg class="w-5 h-5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          <span>Памятка для ученика перед стартом:</span>
+        </div>
+        <ul class="list-disc list-inside space-y-1 text-amber-800 font-medium">
+          <li>Откройте учебник на <b>стр. 184–196</b> и положите перед собой конспект.</li>
+          <li>В уроке <b>10 этапов</b> (всего 35 минут). Внутри каждого этапа 3 уровня: <i>Знание → Понимание → Применение</i>.</li>
+          <li><b>Защита от угадывания:</b> при любой ошибке кнопка блокируется на <b>6 секунд</b>, а задание перегенерируется с новыми случайными данными!</li>
+          <li>При успешном прохождении всех 3 уровней раньше времени открывается <b>Бесконечный бонус-тренажёр</b>.</li>
+        </ul>
+      </div>
+
+      <div class="text-xs text-slate-400">
+        Урок начнётся автоматически при наступлении времени расписания. Учитель может запустить урок вручную.
+      </div>
+    </div>
+
+
+    <!-- ------------------ 2. ACTIVE LESSON STAGE SCREEN ------------------ -->
+    <div id="screen-stage" class="hidden w-full max-w-4xl bg-white border border-slate-200 rounded-2xl shadow-lg overflow-hidden my-auto flex flex-col">
+      
+      <!-- Stage Info Header -->
+      <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div class="flex items-center space-x-2">
+            <span id="stage-number-badge" class="px-2.5 py-0.5 bg-blue-600 text-white font-extrabold text-xs rounded-md">ЭТАП 1 ИЗ 10</span>
+            <span id="stage-duration-tag" class="text-xs font-semibold text-slate-500">Время: 3 мин</span>
+          </div>
+          <h2 id="stage-title" class="text-lg sm:text-xl font-extrabold text-slate-900 mt-1">10.01. Базовые понятия и интерфейс видеоредактора</h2>
+        </div>
+
+        <!-- Level Indicator Pills inside Stage -->
+        <div class="flex items-center space-x-1.5 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm">
+          <div id="level-pill-1" class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white">1. Знание</div>
+          <div id="level-pill-2" class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all bg-slate-100 text-slate-400">2. Понимание</div>
+          <div id="level-pill-3" class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all bg-slate-100 text-slate-400">3. Применение</div>
+        </div>
+      </div>
+
+      <!-- Main Interactive Question Area -->
+      <div class="p-6 sm:p-8 flex-grow space-y-6">
+        
+        <!-- Prompt / Context -->
+        <div id="question-prompt-box" class="bg-blue-50/70 border border-blue-200/80 rounded-xl p-4 text-slate-800 text-sm sm:text-base leading-relaxed font-medium">
+          <!-- Dynamic Prompt Text -->
+        </div>
+
+        <!-- Dynamic Interactive Form / Widget -->
+        <div id="question-interactive-area" class="space-y-4">
+          <!-- Dynamic Inputs (Selects, Ordering, Matching Cards, Text Input, etc.) -->
+        </div>
+
+        <!-- Cooldown / Error Alert Box (Hidden by default) -->
+        <div id="cooldown-box" class="hidden bg-red-50 border border-red-200 rounded-xl p-4 text-red-900 space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="font-bold flex items-center space-x-2 text-sm sm:text-base">
+              <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <span>Ошибка в решении! Повторите материал учебника.</span>
+            </div>
+            <span id="cooldown-seconds" class="font-mono-timer font-bold text-red-700 text-lg">6s</span>
+          </div>
+          <p id="cooldown-hint" class="text-xs sm:text-sm text-red-800 font-medium leading-normal">
+            <!-- Textbook Page Hint -->
+          </p>
+          <!-- Cooldown Progress Bar -->
+          <div class="w-full bg-red-200 h-2 rounded-full overflow-hidden">
+            <div id="cooldown-progress-bar" class="bg-red-600 h-full w-full transition-all duration-100 ease-linear"></div>
+          </div>
+          <div class="text-[11px] text-red-600 font-medium">
+            По истечении 6 секунд задание сгенерируется заново с новым вариантом данных!
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Stage Footer Action Bar -->
+      <div class="bg-slate-50 border-t border-slate-200 px-6 py-4 flex items-center justify-between">
+        <div class="text-xs text-slate-500 font-medium">
+          Нажмите «Проверить решение» для подтверждения ответа.
+        </div>
+        <button id="btn-submit-answer" onclick="checkCurrentLevelAnswer()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-md transition active:scale-95 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
+          <span>Проверить решение</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </button>
+      </div>
+
+    </div>
+
+
+    <!-- ------------------ 3. BONUS DRILL SCREEN (FAST STUDENTS) ------------------ -->
+    <div id="screen-bonus" class="hidden w-full max-w-3xl bg-white border border-slate-200 rounded-2xl shadow-xl p-6 sm:p-8 my-auto space-y-6">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-4">
+        <div class="flex items-center space-x-2">
+          <span class="px-3 py-1 bg-amber-500 text-white font-extrabold text-xs rounded-lg uppercase tracking-wider animate-pulse">БЛИЦ-БОНУС</span>
+          <h3 class="font-extrabold text-slate-900 text-lg">Бесконечный тренажёр по Главе 10</h3>
+        </div>
+        <div class="text-right">
+          <span class="text-xs text-slate-500 font-bold uppercase">Заработано бонусов:</span>
+          <div id="bonus-screen-score" class="text-2xl font-black text-amber-600 font-mono-timer">+0</div>
+        </div>
+      </div>
+
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-950 font-semibold text-sm sm:text-base leading-relaxed">
+        🎉 Поздравляем! Все 3 уровня текущего этапа успешно пройдены (+1 балл в зачёт этапа). До конца времени этапа решайте бонусные вопросы для получения дополнительного рейтинга!
+      </div>
+
+      <div class="space-y-4">
+        <div id="bonus-question-text" class="text-base font-bold text-slate-900 leading-snug">
+          <!-- Dynamic Bonus Question -->
+        </div>
+        <div id="bonus-options-container" class="grid grid-cols-1 gap-2.5">
+          <!-- Dynamic Option Buttons -->
+        </div>
+      </div>
+
+      <div id="bonus-feedback-box" class="hidden p-3 rounded-lg text-xs font-bold text-center">
+        <!-- Bonus Feedback -->
+      </div>
+    </div>
+
+
+    <!-- ------------------ 4. FINAL TEACHER SCREEN ------------------ -->
+    <div id="screen-final" class="hidden fixed inset-0 z-50 flex flex-col items-center justify-center p-6 text-white text-center select-text transition-colors duration-500">
+      
+      <!-- Subdued Overlay Title -->
+      <div class="uppercase tracking-widest text-xs sm:text-sm font-black opacity-80 mb-2">
+        ИТОГОВЫЙ РЕЗУЛЬТАТ УРОКА • ГЛАВА 10
+      </div>
+
+      <!-- Giant Grade Score -->
+      <div id="final-score-giant" class="font-black leading-none my-2 font-mono-timer drop-shadow-lg" style="font-size: min(20vw, 220px);">
+        0 / 10
+      </div>
+
+      <!-- Bonus Badge -->
+      <div id="final-bonus-badge" class="inline-block px-4 py-1.5 bg-white/20 backdrop-blur rounded-full text-base sm:text-xl font-bold mb-6 border border-white/30">
+        +0 БОНУСНЫХ БАЛЛОВ
+      </div>
+
+      <!-- Stage Breakdown List -->
+      <div class="max-w-4xl w-full bg-black/25 backdrop-blur rounded-2xl p-4 sm:p-6 border border-white/20">
+        <div class="text-xs font-bold uppercase tracking-wider mb-3 opacity-90">Детализация выполнения по 10 этапам:</div>
+        <div id="final-breakdown-grid" class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs font-bold font-mono-timer">
+          <!-- 10 Stage Results -->
+        </div>
+      </div>
+
+      <div class="mt-8 text-xs opacity-75 font-medium">
+        Все элементы управления заблокированы. Результаты зафиксированы для учителя.
+      </div>
+
+    </div>
+
+  </main>
+
+
+  <!-- ==================== HIDDEN TEACHER MODAL (ALT + S) ==================== -->
+  <div id="teacher-modal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-300 max-w-lg w-full p-6 space-y-5 text-slate-900">
+      
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div class="flex items-center space-x-2">
+          <span class="px-2 py-0.5 bg-slate-900 text-white font-bold text-xs rounded">TEACHER PANEL</span>
+          <h3 class="font-extrabold text-base">Панель управления учителя</h3>
+        </div>
+        <button onclick="toggleTeacherModal(false)" class="text-slate-400 hover:text-slate-700 font-bold text-lg">&times;</button>
+      </div>
+
+      <div class="space-y-3 text-xs sm:text-sm">
+        
+        <!-- Fast Actions -->
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">1. Принудительный старт / Переключение режима:</label>
+          <button onclick="teacherStartLessonNow()" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition mb-2">
+            🚀 Запустить урок прямо сейчас (снять режим ожидания)
+          </button>
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">2. Переход к любому этапу:</label>
+          <div class="grid grid-cols-5 gap-1.5">
+            <script>
+              for(let i=1; i<=10; i++){
+                document.write(`<button onclick="teacherJumpToStage(${i})" class="py-1.5 bg-slate-100 hover:bg-blue-100 hover:text-blue-700 text-slate-800 font-bold rounded border border-slate-300 text-xs">${i}</button>`);
+              }
+            </script>
+          </div>
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">3. Быстрое прохождение текущего этапа:</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="teacherPassCurrentLevel()" class="py-2 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 font-bold rounded-lg border border-emerald-300">
+              ✓ Засчитать этот уровень
+            </button>
+            <button onclick="teacherPassCurrentStage()" class="py-2 bg-emerald-600 text-white hover:bg-emerald-700 font-bold rounded-lg shadow">
+              ★ Засчитать весь этап (+1)
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">4. Просмотр Финального экрана (Тестирование):</label>
+          <div class="grid grid-cols-3 gap-1.5">
+            <button onclick="teacherShowFinalScreen(9)" class="py-1.5 bg-emerald-700 text-white font-bold rounded text-xs">8–10 (Зелёный)</button>
+            <button onclick="teacherShowFinalScreen(6)" class="py-1.5 bg-amber-600 text-white font-bold rounded text-xs">5–7 (Янтарный)</button>
+            <button onclick="teacherShowFinalScreen(3)" class="py-1.5 bg-red-700 text-white font-bold rounded text-xs">0–4 (Красный)</button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="border-t border-slate-200 pt-3 flex justify-end">
+        <button onclick="toggleTeacherModal(false)" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 font-bold text-xs rounded-lg">
+          Закрыть панель (Esc)
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ==================== JAVASCRIPT APPLICATION LOGIC ==================== -->
+  <script>
+    /* ========================================================================
+       STATE & GLOBAL CONFIGURATION
+       ======================================================================== */
+    const SCHEDULE_SLOTS = ["11:30", "12:20"];
+    
+    // Stage durations in seconds: Stages 1,2,6,7,9 = 180s (3m); 3,4,5,8,10 = 240s (4m)
+    const STAGE_CONFIGS = [
+      { id: 1, duration: 180, title: "10.01. Базовые понятия и интерфейс видеоредактора", bookPages: "185–186" },
+      { id: 2, duration: 180, title: "10.01. Соотношение сторон и разрешение экрана", bookPages: "185–186" },
+      { id: 3, duration: 240, title: "10.01. Монтаж, обрезка (Trim/Cut) и объединение клипов", bookPages: "186–187" },
+      { id: 4, duration: 240, title: "10.01. Текстовые слайды, титры, субтитры и анимация", bookPages: "188" },
+      { id: 5, duration: 240, title: "10.01. Стоп-кадры, работа со звуком и скорость видео", bookPages: "189–190" },
+      { id: 6, duration: 180, title: "10.01. Экспорт видеоклипов, сжатие и совместимость", bookPages: "190–191" },
+      { id: 7, duration: 180, title: "10.02. Интерфейс аудиоредактора и эффекты Fade In/Out", bookPages: "191–193" },
+      { id: 8, duration: 240, title: "10.02. Скорость аудио, реверберация и закадровый голос", bookPages: "193–194" },
+      { id: 9, duration: 180, title: "10.02. Частота дискретизации и глубина сэмпла", bookPages: "195" },
+      { id: 10, duration: 240, title: "10.02–10.03. Экспорт аудио и итоговый аудит проектов", bookPages: "195–196" },
+    ];
+
+    let appState = {
+      status: "WAITING", // WAITING, LESSON, FINAL
+      targetStartTime: null,
+      currentStageIndex: 0, // 0..9
+      currentLevel: 1, // 1, 2, 3
+      stagePassed: [false, false, false, false, false, false, false, false, false, false],
+      stageScores: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      bonusScore: 0,
+      stageSecondsLeft: 180,
+      currentVariantData: null,
+      isCooldown: false,
+      badgeClickCount: 0,
+      badgeClickTimer: null,
+    };
+
+    let timerInterval = null;
+    let cooldownInterval = null;
+
+    /* ========================================================================
+       INITIALIZATION & TIME CALCULATIONS
+       ======================================================================== */
+    window.addEventListener("DOMContentLoaded", () => {
+      calculateTargetStartTime();
+      initHeaderPills();
+      startGlobalClock();
+      setupKeyboardShortcuts();
+    });
+
+    function calculateTargetStartTime() {
+      const now = new Date();
+      let selectedTime = null;
+
+      for (let slotStr of SCHEDULE_SLOTS) {
+        const [hours, minutes] = slotStr.split(":").map(Number);
+        const slotDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0, 0);
+        if (slotDate > now) {
+          selectedTime = slotDate;
+          break;
+        }
+      }
+
+      // If both slots today have passed, choose first slot tomorrow
+      if (!selectedTime) {
+        const [hours, minutes] = SCHEDULE_SLOTS[0].split(":").map(Number);
+        selectedTime = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, hours, minutes, 0, 0);
+      }
+
+      appState.targetStartTime = selectedTime;
+      const hoursStr = String(selectedTime.getHours()).padStart(2, '0');
+      const minsStr = String(selectedTime.getMinutes()).padStart(2, '0');
+      document.getElementById("scheduled-start-time").textContent = `${hoursStr}:${minsStr}`;
+    }
+
+    function startGlobalClock() {
+      if (timerInterval) clearInterval(timerInterval);
+      
+      timerInterval = setInterval(() => {
+        const now = new Date();
+
+        if (appState.status === "WAITING") {
+          const diffMs = appState.targetStartTime - now;
+          if (diffMs <= 0) {
+            startLesson();
+          } else {
+            updateWaitingTimerDisplay(diffMs);
+          }
+        } else if (appState.status === "LESSON") {
+          appState.stageSecondsLeft--;
+          updateStageTimerDisplay();
+
+          if (appState.stageSecondsLeft <= 0) {
+            advanceToNextStage();
+          }
+        }
+      }, 1000);
+    }
+
+    function updateWaitingTimerDisplay(diffMs) {
+      const totalSec = Math.floor(diffMs / 1000);
+      const h = Math.floor(totalSec / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+      const formatted = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      document.getElementById("waiting-countdown").textContent = formatted;
+    }
+
+    function startLesson() {
+      appState.status = "LESSON";
+      appState.currentStageIndex = 0;
+      document.getElementById("screen-waiting").classList.add("hidden");
+      document.getElementById("main-header").classList.remove("hidden");
+      loadStage(0);
+    }
+
+    /* ========================================================================
+       HEADER & STAGE PROGRESS UI
+       ======================================================================== */
+    function initHeaderPills() {
+      const container = document.getElementById("stage-pills-container");
+      container.innerHTML = "";
+      for (let i = 0; i < 10; i++) {
+        const pill = document.createElement("div");
+        pill.id = `header-pill-${i}`;
+        pill.className = "w-7 h-7 sm:w-8 sm:h-8 rounded-lg font-mono-timer font-bold text-xs flex items-center justify-center transition-all bg-slate-200 text-slate-500";
+        pill.textContent = i + 1;
+        container.appendChild(pill);
+      }
+    }
+
+    function updateHeaderUI() {
+      // Score total
+      const totalScore = appState.stageScores.reduce((a, b) => a + b, 0);
+      document.getElementById("header-main-score").textContent = totalScore;
+      document.getElementById("header-bonus-score").textContent = `+${appState.bonusScore}`;
+
+      // Pills status
+      for (let i = 0; i < 10; i++) {
+        const pill = document.getElementById(`header-pill-${i}`);
+        if (i === appState.currentStageIndex) {
+          pill.className = "w-7 h-7 sm:w-8 sm:h-8 rounded-lg font-mono-timer font-bold text-xs flex items-center justify-center transition-all bg-blue-600 text-white shadow-md ring-2 ring-blue-300";
+        } else if (appState.stagePassed[i]) {
+          pill.className = "w-7 h-7 sm:w-8 sm:h-8 rounded-lg font-mono-timer font-bold text-xs flex items-center justify-center transition-all bg-emerald-600 text-white";
+        } else {
+          pill.className = "w-7 h-7 sm:w-8 sm:h-8 rounded-lg font-mono-timer font-bold text-xs flex items-center justify-center transition-all bg-slate-200 text-slate-500";
+        }
+      }
+
+      // Mastery flag
+      const isCurrentStagePassed = appState.stagePassed[appState.currentStageIndex];
+      const flag = document.getElementById("mastery-flag");
+      if (isCurrentStagePassed) {
+        flag.className = "px-2.5 py-1 rounded-md text-xs font-bold transition-all bg-emerald-600 text-white shadow-sm";
+        flag.textContent = "УСВОЕНИЕ: ДОСТАТОЧНО (+1 БАЛЛ)";
+      } else {
+        flag.className = "px-2.5 py-1 rounded-md text-xs font-bold transition-all bg-slate-100 text-slate-500 border border-slate-200";
+        flag.textContent = "УСВОЕНИЕ: НЕДОСТАТОЧНО (0 БАЛЛОВ)";
+      }
+    }
+
+    function updateStageTimerDisplay() {
+      const m = Math.floor(appState.stageSecondsLeft / 60);
+      const s = appState.stageSecondsLeft % 60;
+      const str = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      const timerDisplay = document.getElementById("stage-timer-display");
+      const timerBox = document.getElementById("stage-timer-box");
+      timerDisplay.textContent = str;
+
+      if (appState.stageSecondsLeft <= 30) {
+        timerBox.className = "px-3 py-1 bg-red-600 text-white rounded-lg font-mono-timer font-bold text-base shadow-inner flex items-center space-x-1 animate-pulse-fast";
+      } else {
+        timerBox.className = "px-3 py-1 bg-slate-900 text-white rounded-lg font-mono-timer font-bold text-base shadow-inner flex items-center space-x-1";
+      }
+    }
+
+    /* ========================================================================
+       STAGE & LEVEL CONTROLLER
+       ======================================================================== */
+    function loadStage(stageIndex) {
+      if (stageIndex >= 10) {
+        showFinalTeacherScreen();
+        return;
+      }
+
+      appState.currentStageIndex = stageIndex;
+      appState.currentLevel = 1;
+      const conf = STAGE_CONFIGS[stageIndex];
+      appState.stageSecondsLeft = conf.duration;
+
+      document.getElementById("screen-stage").classList.remove("hidden");
+      document.getElementById("screen-bonus").classList.add("hidden");
+
+      document.getElementById("stage-number-badge").textContent = `ЭТАП ${stageIndex + 1} ИЗ 10`;
+      document.getElementById("stage-duration-tag").textContent = `Время: ${conf.duration / 60} мин`;
+      document.getElementById("stage-title").textContent = conf.title;
+
+      updateHeaderUI();
+      updateStageTimerDisplay();
+      loadLevelQuestion();
+    }
+
+    function advanceToNextStage() {
+      if (appState.currentStageIndex < 9) {
+        loadStage(appState.currentStageIndex + 1);
+      } else {
+        showFinalTeacherScreen();
+      }
+    }
+
+    function updateLevelPillsUI() {
+      for (let lvl = 1; lvl <= 3; lvl++) {
+        const pill = document.getElementById(`level-pill-${lvl}`);
+        if (lvl === appState.currentLevel) {
+          pill.className = "px-2.5 py-1 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow-sm";
+        } else if (lvl < appState.currentLevel || appState.stagePassed[appState.currentStageIndex]) {
+          pill.className = "px-2.5 py-1 rounded-lg text-xs font-bold transition-all bg-emerald-100 text-emerald-800";
+        } else {
+          pill.className = "px-2.5 py-1 rounded-lg text-xs font-bold transition-all bg-slate-100 text-slate-400";
+        }
+      }
+    }
+
+    /* ========================================================================
+       DYNAMIC QUESTION GENERATORS (30 LEVELS: 10 STAGES x 3 LEVELS)
+       Each level has a pool of 4-6 randomized variants!
+       ======================================================================== */
+    function getRandomVariant(variantsPool) {
+      const idx = Math.floor(Math.random() * variantsPool.length);
+      return JSON.parse(JSON.stringify(variantsPool[idx])); // Deep copy
+    }
+
+    function loadLevelQuestion() {
+      updateLevelPillsUI();
+      hideCooldownBox();
+
+      if (appState.stagePassed[appState.currentStageIndex]) {
+        openBonusDrill();
+        return;
+      }
+
+      const stageIdx = appState.currentStageIndex;
+      const level = appState.currentLevel;
+
+      // Generate variant
+      appState.currentVariantData = generateQuestionData(stageIdx, level);
+      renderQuestionUI(appState.currentVariantData);
+    }
+
+    function generateQuestionData(stageIdx, level) {
+      // 10 STAGES, EACH HAS LEVELS 1, 2, 3
+      switch (stageIdx) {
+        
+        // ------------------ STAGE 1: Basics & Interface ------------------
+        case 0:
+          if (level === 1) {
+            // Matrix Table Select
+            return getRandomVariant([
+              {
+                type: "matrix",
+                prompt: "Уровень 1. Знание: Установите соответствие между базовыми терминами видеоредактора и их точными определениями из учебника.",
+                rows: [
+                  { label: "Пиксель", options: ["Очень маленькая квадратная область одного цвета на экране", "Отдельное неподвижное изображение в видеофайле", "Объединение эффектов для создания конечного файла"], correct: 0 },
+                  { label: "Кадр", options: ["Цветовой эффект, применяемый к клипу", "Отдельное неподвижное изображение в видеофайле", "Переход от одного клипа к другому"], correct: 1 },
+                  { label: "Рендеринг", options: ["Объединение всех эффектов в конечный файл", "Извлечение звуковой дорожки", "Изменение соотношения сторон"], correct: 0 }
+                ]
+              },
+              {
+                type: "matrix",
+                prompt: "Уровень 1. Знание: Сопоставьте элементы видеомонтажа с их корректным смысловым понятием.",
+                rows: [
+                  { label: "Эффект перехода", options: ["Смена одного клипа на другой", "Цветовой фильтр сепии", "Разрешение в пикселях"], correct: 0 },
+                  { label: "Фильтр", options: ["Цветовой эффект, изменяющий внешний вид клипа", "Настройка громкости звука", "Вырезание фрагментов кадра"], correct: 0 },
+                  { label: "Временная шкала", options: ["Большое пространство справа для размещения и копирования клипов", "Окно просмотра слева", "Панель вывода файлов"], correct: 0 }
+                ]
+              }
+            ]);
+          } else if (level === 2) {
+            // Error Diagnosis Card Selection
+            return getRandomVariant([
+              {
+                type: "cards_single",
+                prompt: "Уровень 2. Понимание: Найдите ОШИБОЧНОЕ утверждение о структуре и окнах программ типа Windows Movie Maker.",
+                options: [
+                  "Исходное окно просмотра расположено слева в интерфейсе.",
+                  "Временная шкала (Timeline) размещается в основном пространстве справа.",
+                  "Фильтры служат для объединения эффектов в готовый единый файл на диске."
+                ],
+                correct: 2,
+                explain: "Объединение всех эффектов в конечный видеофайл называется рендерингом, а не фильтром."
+              },
+              {
+                type: "cards_single",
+                prompt: "Уровень 2. Понимание: Диагностируйте неверную формулировку об элементах кадровой структуры видео.",
+                options: [
+                  "Каждая видеозапись состоит из последовательности неподвижных кадров.",
+                  "Рендеринг выполняется в самом начале проекта до импорта клипов.",
+                  "Пиксели объединяются для создания растрового изображения на экране."
+                ],
+                correct: 1,
+                explain: "Рендеринг выполняется в конце проекта при экспорте готового видеофайла."
+              }
+            ]);
+          } else {
+            // Application: Interface Layout Assembly
+            return getRandomVariant([
+              {
+                type: "ordering",
+                prompt: "Уровень 3. Применение: Упорядочьте последовательность базовых действий при начальной сборке проекта в видеоредакторе.",
+                items: [
+                  "1. Импортировать видеоклипы и изображения в программный пакет",
+                  "2. Перетащить необходимые клипы на временную шкалу (Timeline)",
+                  "3. Применить к клипам цветовые фильтры или эффекты переходов",
+                  "4. Выполнить финальный рендеринг и экспорт проекта"
+                ],
+                correctOrder: [0, 1, 2, 3]
+              },
+              {
+                type: "ordering",
+                prompt: "Уровень 3. Применение: Восстановите технологический алгоритм обработки медиа-ресурсов в видеоредакторе.",
+                items: [
+                  "1. Добавление медиафайлов в панель импорта",
+                  "2. Размещение файлов на временной шкале в нужном порядке",
+                  "3. Настройка переходов между фрагментами",
+                  "4. Рендеринг и сохранение файла"
+                ],
+                correctOrder: [0, 1, 2, 3]
+              }
+            ]);
+          }
+
+        // ------------------ STAGE 2: Aspect Ratio & Resolution ------------------
+        case 1:
+          if (level === 1) {
+            return getRandomVariant([
+              {
+                type: "matrix",
+                prompt: "Уровень 1. Знание: Выберите стандартное соотношение сторон и разрешение для предложенных устройств и сфер применения.",
+                rows: [
+                  { label: "HD-телевизоры и современные мониторы", options: ["16:9", "4:3", "1:1"], correct: 0 },
+                  { label: "Классическая фотография", options: ["4:3 или 3:2", "16:9", "21:9"], correct: 0 },
+                  { label: "Стандарт максимального разрешения в главе (1920p × 1080p)", options: ["2 073 600 пикселей", "1 000 000 пикселей", "500 000 пикселей"], correct: 0 }
+                ]
+              },
+              {
+                type: "matrix",
+                prompt: "Уровень 1. Знание: Соотнесите термины геометрических параметров видео.",
+                rows: [
+                  { label: "Соотношение сторон", options: ["Отношение ширины к высоте экрана", "Количество кадров в секунду", "Громкость звуковой дорожки"], correct: 0 },
+                  { label: "Разрешение кадра", options: ["Количество пикселей по горизонтали и вертикали", "Длительность видеоролика", "Формат сжатия MP3"], correct: 0 },
+                  { label: "Стандарт 16:9", options: ["Высокая чёткость (HDTV)", "Формат старых мобильных телефонов", "Разрешение печати"], correct: 0 }
+                ]
+              }
+            ]);
+          } else if (level === 2) {
+            return getRandomVariant([
+              {
+                type: "cards_single",
+                prompt: "Уровень 2. Понимание: На каком этапе создания видеопроекта производится первоначальное определение соотношения сторон и размера изображения?",
+                options: [
+                  "Строго на начальном этапе создания проекта",
+                  "После экспортного рендеринга видеофайла",
+                  "При наложении аудиодорожки в Audacity"
+                ],
+                correct: 0,
+                explain: "Согласно учебнику (стр. 185), определение соотношения сторон и размера производится на начальном этапе проекта."
+              },
+              {
+                type: "cards_single",
+                prompt: "Уровень 2. Понимание: Сколько пикселей содержит один кадр видео стандарта Full HD с разрешением 1920×1080?",
+                options: [
+                  "2 073 600 пикселей",
+                  "1 920 000 пикселей",
+                  "3 840 000 пикселей"
+                ],
+                correct: 0,
+                explain: "1920 * 1080 = 2 073 600 пикселей в одном кадре."
+              }
+            ]);
+          } else {
+            return getRandomVariant([
+              {
+                type: "text_input",
+                prompt: "Уровень 3. Применение: Введите общее число пикселей в одном кадре для видео с разрешением 1920 на 1080 (числом без пробелов):",
+                correctText: "2073600"
+              },
+              {
+                type: "text_input",
+                prompt: "Уровень 3. Применение: Введите стандартное широкоформатное соотношение сторон высокой чёткости для ТВ и мониторов (в формате Х:Y):",
+                correctText: "16:9"
+              }
+            ]);
+          }
+
+        // ------------------ STAGE 3: Trimming & Joining Clips ------------------
+        case 2:
+          if (level === 1) {
+            return getRandomVariant([
+              {
+                type: "matrix",
+                prompt: "Уровень 1. Знание: Сопоставьте инструменты монтажа с их назначением.",
+                rows: [
+                  { label: "Инструмент Trim/Cut (Обрезать)", options: ["Удаление выбранной части видео до или после указанной точки", "Склеивание аудиофайлов без изменения видео", "Применение фильтра сепии"], correct: 0 },
+                  { label: "Точки Start point / End point", options: ["Задание начальной и конечной границ клипа", "Выбор разрешения экрана", "Настройка частоты дискретизации"], correct: 0 },
+                  { label: "Объединение клипов", options: ["Перетаскивание клипов на временной шкале рядом друг с другом", "Рендеринг без сохранения", "Наложение субтитров"], correct: 0 }
+                ]
+              }
+            ]);
+          } else if (level === 2) {
+            return getRandomVariant([
+              {
+                type: "cards_single",
+                prompt: "Уровень 2. Понимание: Какова главная методическая цель выполнения монтажа и обрезки видеоклипов?",
+                options: [
+                  "Чтобы видеоролики не были слишком длинными и скучными для зрителя",
+                  "Чтобы искусственно уменьшить количество пикселей в кадре",
+                  "Чтобы отключить возможность экспорта в формат MP4"
+                ],
+                correct: 0,
+                explain: "Учебник даёт совет: монтаж выполняется, чтобы видеоролики не были слишком длинными и скучными."
+              }
+            ]);
+          } else {
+            return getRandomVariant([
+              {
+                type: "ordering",
+                prompt: "Уровень 3. Применение: Соберите алгоритм качественной обрезки и соединения двух видеофрагментов.",
+                items: [
+                  "1. Импортировать два исходных видеоклипа на панель проекта",
+                  "2. Найти нужные точки начала и конца (Start/End) и обрезать лишние части инструментом Trim/Cut",
+                  "3. Соединить обработанные клипы на временной шкале друг за другом",
+                  "4. Применить подходящий эффект перехода между клипами для плавности"
+                ],
+                correctOrder: [0, 1, 2, 3]
+              }
+            ]);
+          }
+
+        // ------------------ STAGE 4: Text Slides, Titles & Animation Rules ------------------
+        case 3:
+          if (level === 1) {
+            return getRandomVariant([
+              {
+                type: "matrix",
+                prompt: "Уровень 1. Знание: Определите назначения разных видов текстовых элементов в видео.",
+                rows: [
+                  { label: "Титульный слайд (Текстовый слайд)", options: ["Показ темы в начале видео или передача важной информации", "Вывод авторов в самом конце", "Пояснение речи для слабослышащих"], correct: 0 },
+                  { label: "Титры (Credits)", options: ["Отображение участников в конце видео", "Настройка разрешения экрана", "Ускорение движения"], correct: 0 },
+                  { label: "Субтитры", options: ["Текст поверх кадров для пояснения речи или слабослышащих", "Фоновое цветное изображение", "Переход к движущемуся кадру"], correct: 0 }
+                ]
+              }
+            ]);
+          } else if (level === 2) {
+            return getRandomVariant([
+              {
+                type: "cards_single",
+                prompt: "Уровень 2. Понимание: Какое правило применения эффекта затухания (Fade) сформулировано в учебнике?",
+                options: [
+                  "Не рекомендуется использовать Fade для кадров в движении, чтобы не портить качество движения",
+                  "Fade нужно применять ко абсолютно всем динамическим кадрам драки и погони",
+                  "Fade отменяет синхронизацию субтитров с произносимыми словами"
+                ],
+                correct: 0,
+                explain: "В учебнике (стр. 188) указано: эффект затухания не рекомендуется использовать для кадров в движении, так как это портит качество движения."
+              }
+            ]);
+          } else {
+            return getRandomVariant([
+              {
+                type: "cards_single",
+                prompt: "Уровень 3. Применение: Выберите правильный вариант настройки эффекта Fade (оттенок) и текста.",
+                options: [
+                  "Эффект FADE (оттенок) уместно использовать в кадрах в духе праздника",
+                  "Субтитры должны появляться с задержкой в 10 секунд от произносимых слов",
+                  "Текстовый слайд запрещено накладывать на однотонный цветной блок"
+                ],
+                correct: 0,
+                explain: "Эффект FADE (оттенок) уместен для праздничного настроения, а время субтитров должно строго соответствовать речи."
+              }
+            ]);
+          }
+
+        // ------------------ STAGE 5: Freeze frames, Sound in Video & Speed ------------------
+        case 4:
+          if (level === 1) {
+            return getRandomVariant([
+              {
+                type: "matrix",
+                prompt: "Уровень 1. Знание: Соотнесите специальный инструмент редактирования видео с его функцией.",
+                rows: [
+                  { label: "Создание снимка экрана (Snapshot)", options: ["Извлечение одного кадра в виде отдельного неподвижного изображения", "Запись закадрового звука", "Изменение соотношения на 4:3"], correct: 0 },
+                  { label: "Замедленное движение (Slow-motion)", options: ["Применяется в боевиках и спорте для демонстрации быстрых событий", "Быстрый просмотр длительного захода солнца", "Удаление шума на аудио"], correct: 0 },
+                  { label: "Интервальная съёмка (Timelapse)", options: ["Запись по 1 кадру раз в несколько минут с последующим ускорением", "Остановка звука", "Вырезание титров"], correct: 0 }
+                ]
+              }
+            ]);
+          } else if (level === 2) {
+            return getRandomVariant([
+              {
+                type: "cards_single",
+                prompt: "Уровень 2. Понимание: Зачем в выпусках новостей на заднем плане диктора вставляется неподвижное изображение?",
+                options: [
+                  "Для иллюстрирования прочитанной информации и предоставления визуального контекста",
+                  "Для автоматического сжатия видеофайла в формат MP3",
+                  "Для маскировки дефектов рендеринга"
+                ],
+                correct: 0,
+                explain: "Неподвижное изображение иллюстрирует новости и дает визуальную информацию зрителям (стр. 189)."
+              }
+            ]);
+          } else {
+            return getRandomVariant([
+              {
+                type: "cards_single",
+                prompt: "Уровень 3. Применение: Что должен сделать видеомонтажёр, если при записи видео исходный звук оказался нечётким или с сильным шумом?",
+                options: [
+                  "Отключить/удалить исходный звук и заменить его на более качественную записанную аудиодорожку",
+                  "Увеличить скорость видео в 10 раз, чтобы шум исчез сам",
+                  "Применить фильтр сепии на видеоряд"
+                ],
+                correct: 0,
+                explain: "Некачественный звук следует отключить или удалить (Remove/Delete) и заменить саундтреком (стр. 190)."
+              }
+            ]);
+          }
+
+        // ------------------ STAGE 6: Video Export & Compatibility ------------------
+        case 5:
+          if (level === 1) {
+            return getRandomVariant([
+              {
+                type: "matrix",
+                prompt: "Уровень 1. Знание: Характеристики видеоформатов и экспорта.",
+                rows: [
+                  { label: "Формат MP4", options: ["Сжимает файл с сохранением значительной части качества", "Не поддерживает сжатие", "Работает только на магнитной ленте"], correct: 0 },
+                  { label: "Флэш-файлы (Flash)", options: ["Устаревший формат, не поддерживавшийся на iPad", "Современный стандарт 4K", "Формат аудиозаписи Audacity"], correct: 0 },
+                  { label: "Распространённые форматы для веб-сайтов", options: [".mp4, .avi, .mov", ".exe, .txt, .doc", ".wav, .mp3, .flac"], correct: 0 }
+                ]
+              }
+            ]);
+          } else if (level === 2) {
+            return getRandomVariant([
+              {
+                type: "cards_single",
+                prompt: "Уровень 2. Понимание: Почему появление iPad заставило большинство веб-сайтов перевести видео в форматы MP4/HTML5?",
+                options: [
+                  "Потому что iPad не поддерживал флэш-файлы (Flash), и видео на сайтах не воспроизводилось",
+                  "Потому что iPad запрещал использование разрешения 1920x1080",
+                  "Потому что Flash увеличивал частоту дискретизации до 100 кГц"
+                ],
+                correct: 0,
+                explain: "iPad не поддерживал Flash, что вынудило индустрию перейти на универсальные форматы вроде MP4 (стр. 191)."
+              }
+            ]);
+          } else {
+            return getRandomVariant([
+              {
+                type: "text_input",
+                prompt: "Уровень 3. Применение: Введите аббревиатуру наиболее популярного формата видео (3 символа), который эффективно сжимает видеофайл при хорошем качестве:",
+                correctText: "MP4"
+              }
+            ]);
+          }
+
+        // ------------------ STAGE 7: Audio Editor Interface & Fade In/Out ------------------
+        case 6:
+          if (level === 1) {
+            return getRandomVariant([
+              {
+                type: "matrix",
+                prompt: "Уровень 1. Знание: Элементы программы редактирования аудио Audacity.",
+                rows: [
+                  { label: "Форма представления дорожки", options: ["Звуковая волна (Waveform)", "Пиксельная сетка", "Таблица кадров"], correct: 0 },
+                  { label: "Эффект Fade In", options: ["Начинается тихо и постепенно становится громче", "Начинается громко и затихает", "Создаёт эхо в зале"], correct: 0 },
+                  { label: "Эффект Fade Out", options: ["Начинается громко и постепенно становится тише", "Начинается тихо и становится громче", "Меняет разрешение на 16:9"], correct: 0 }
+                ]
+              }
+            ]);
+          } else if (level === 2) {
+            return getRandomVariant([
+              {
+                type: "cards_single",
+                prompt: "Уровень 2. Понимание: Зачем радиоведущий перед запуском громкой песни применяет эффект Fade In в течение нескольких секунд?",
+                options: [
+                  "Чтобы песня не превратилась в резкий шум и не шокировала слушателей, давая им приспособиться к звуку",
+                  "Чтобы автоматически удалить все шипящие звуки из вокала",
+                  "Чтобы превратить стереозвук в монофонический"
+                ],
+                correct: 0,
+                explain: "Плавный переход Fade In защищает аудиторию от шокового громкого звука (стр. 193)."
+              }
+            ]);
+          } else {
+            return getRandomVariant([
+              {
+                type: "ordering",
+                prompt: "Уровень 3. Применение: Упорядочьте действия для обрезки и настройки звукового затухания трека в Audacity.",
+                items: [
+                  "1. Импортировать звуковой файл в аудиоредактор",
+                  "2. Выделить инструментом ненужный фрагмент и нажать «Delete»",
+                  "3. Выделить первые 5 секунд трека и применить эффект «Fade In»",
+                  "4. Выделить последние 10 секунд трека и применить эффект «Fade Out»"
+                ],
+                correctOrder: [0, 1, 2, 3]
+              }
+            ]);
+          }
+
+        // ------------------ STAGE 8: Audio Speed, Reverb & Overdubbing ------------------
+        case 7:
+          if (level === 1) {
+            return getRandomVariant([
+              {
+                type: "matrix",
+                prompt: "Уровень 1. Знание: Эффекты и процессы звукозаписи.",
+                rows: [
+                  { label: "Ускорение аудиоклипа без коррекции", options: ["Звук становится очень высоким и скрипучим", "Звук становится глубоким и басовитым", "Появляется эффект реверберации"], correct: 0 },
+                  { label: "Замедление аудиоклипа без коррекции", options: ["Звук становится глубоким и содержит слишком много басов", "Звук пищит на высокой ноте", "Разрешение увеличивается"], correct: 0 },
+                  { label: "Эффект реверберации (Reverb)", options: ["Создаёт многократное повторение звука (эхо зала)", "Удаляет фоновый шум", "Объединяет 2 кадра"], correct: 0 }
+                ]
+              }
+            ]);
+          } else if (level === 2) {
+            return getRandomVariant([
+              {
+                type: "cards_single",
+                prompt: "Уровень 2. Понимание: Почему при записи закадрового перевода или голоса за кадром (наложение) фоновый шум видео не удаляют полностью?",
+                options: [
+                  "Чтобы сохранить первоначальную атмосферу, иначе клип станет сухим и менее интересным",
+                  "Потому чтоAudacity не умеет удалять звуковые дорожки",
+                  "Чтобы уменьшить частоту дискретизации с 48 кГц до 8 кГц"
+                ],
+                correct: 0,
+                explain: "Фоновый шум оставляют для сохранения естественной атмосферы сюжета (стр. 193)."
+              }
+            ]);
+          } else {
+            return getRandomVariant([
+              {
+                type: "cards_single",
+                prompt: "Уровень 3. Применение: Как нормализовать пищащий шипящий звук, возникший из-за увеличения скорости аудиодорожки?",
+                options: [
+                  "Отрегулировать громкость и высоту тона (Pitch/Volume) в окне параметров Change Speed",
+                  "Применить эффект Fade Out на всю длину трека",
+                  "Экспортировать аудио в текстовый документ"
+                ],
+                correct: 0,
+                explain: "Для исправления искажений при изменении скорости регулируют громкость и высотно-тональные параметры (стр. 193)."
+              }
+            ]);
+          }
+
+        // ------------------ STAGE 9: Sampling Rate & Bit Depth ------------------
+        case 8:
+          if (level === 1) {
+            return getRandomVariant([
+              {
+                type: "matrix",
+                prompt: "Уровень 1. Знание: Параметры оцифровки звука из параграфа 10.02.",
+                rows: [
+                  { label: "Частота дискретизации", options: ["Количество измерений громкости звука (выборок) в секунду (Гц/кГц)", "Размер кадра в пикселях", "Скорость смены слайдов"], correct: 0 },
+                  { label: "Стандартная частота цифровой записи", options: ["48 кГц", "500 кГц", "10 Гц"], correct: 0 },
+                  { label: "Порог человеческого уха", options: ["Свыше 50 кГц ухо не различает повышение качества", "Свыше 1 кГц ухо ничего не слышит", "Строго 8 Гц"], correct: 0 }
+                ]
+              }
+            ]);
+          } else if (level === 2) {
+            return getRandomVariant([
+              {
+                type: "matrix",
+                prompt: "Уровень 2. Понимание: Сопоставьте размер сэмпла (глубину) и количество дискретных значений.",
+                rows: [
+                  { label: "2-битный размер сэмпла", options: ["4 двоичных значения (00, 01, 10, 11)", "256 значений", "более 65 000 значений"], correct: 0 },
+                  { label: "8-битный размер сэмпла", options: ["256 различных значений (низкое качество)", "4 значения", "65 536 значений"], correct: 0 },
+                  { label: "16-битный размер сэмпла", options: ["более 65 000 значений (высокое качество)", "256 значений", "2 значения"], correct: 0 }
+                ]
+              }
+            ]);
+          } else {
+            return getRandomVariant([
+              {
+                type: "text_input",
+                prompt: "Уровень 3. Применение: Введите число различных значений уровней сигнала, которое может принимать 8-битная выборка звука (числом):",
+                correctText: "256"
+              },
+              {
+                type: "text_input",
+                prompt: "Уровень 3. Применение: Введите стандартную частоту дискретизации большинства цифровых записывающих устройств в кГц (только число):",
+                correctText: "48"
+              }
+            ]);
+          }
+
+        // ------------------ STAGE 10: Audio Export & Final Pipeline Audit ------------------
+        case 9:
+          if (level === 1) {
+            return getRandomVariant([
+              {
+                type: "matrix",
+                prompt: "Уровень 1. Знание: Аудиоформаты и методы их сохранения.",
+                rows: [
+                  { label: "Формат MP3", options: ["Распространённый формат сжатых аудиофайлов", "Несжатый формат студийного качества", "Формат видеоклипа"], correct: 0 },
+                  { label: "Формат WAV", options: ["Аудиоформат без сжатия (большой размер)", "Сильно сжатый видеофайл", "Графический снимка кадра"], correct: 0 },
+                  { label: "Форматы FLAC, WMA, ALAC", options: ["Специализированные аудиоформаты с различной степенью сжатия", "Форматы расширений видеомонтажа Movie Maker", "Кодеки экрана"], correct: 0 }
+                ]
+              }
+            ]);
+          } else if (level === 2) {
+            return getRandomVariant([
+              {
+                type: "ordering",
+                prompt: "Уровень 2. Понимание: Расставьте этапы полного цикла создания мультимедийного видеоролика со звуком в правильном порядке.",
+                items: [
+                  "1. Настройка соотношения сторон (16:9) и импорт медиафайлов",
+                  "2. Монтаж и обрезка лишних видеокадров (Trim/Cut)",
+                  "3. Наложение текстового слайда, титров и переходов",
+                  "4. Очистка или замена аудиодорожки, применение Fade In/Out",
+                  "5. Финальный рендеринг и экспорт готового проекта в MP4"
+                ],
+                correctOrder: [0, 1, 2, 3, 4]
+              }
+            ]);
+          } else {
+            return getRandomVariant([
+              {
+                type: "cards_single",
+                prompt: "Уровень 3. Применение: Проведите аудит проекта. В каком случае проектная спецификация содержит ГРУБУЮ методическую ошибку?",
+                options: [
+                  "Спецификация: «Применить эффект затухания Fade к быстро движущемуся кадру погони для улучшения плавностей движения»",
+                  "Спецификация: «Установить частоту дискретизации аудио 48 кГц и сжать саундтрек в MP3»",
+                  "Спецификация: «Использовать формат MP4 для публикации видеоролика на веб-сайте»"
+                ],
+                correct: 0,
+                explain: "Учебник прямо запрещает использовать эффект Fade на кадрах в движении, так как он портит качество движения!"
+              }
+            ]);
+          }
+
+        default:
+          return null;
+      }
+    }
+
+    /* ========================================================================
+       QUESTION UI RENDERERS
+       ======================================================================== */
+    function renderQuestionUI(data) {
+      const promptBox = document.getElementById("question-prompt-box");
+      const interactiveArea = document.getElementById("question-interactive-area");
+
+      promptBox.textContent = data.prompt;
+      interactiveArea.innerHTML = "";
+
+      if (data.type === "matrix") {
+        const table = document.createElement("table");
+        table.className = "w-full text-xs sm:text-sm border-collapse border border-slate-200 rounded-xl overflow-hidden shadow-sm";
+        let html = `<thead class="bg-slate-100 font-bold text-slate-700">
+          <tr>
+            <th class="p-3 border border-slate-200 text-left">Понятие / Элемент</th>
+            <th class="p-3 border border-slate-200 text-left">Выберите соответствие</th>
+          </tr>
+        </thead><tbody>`;
+
+        data.rows.forEach((row, idx) => {
+          html += `<tr class="bg-white border-b border-slate-200">
+            <td class="p-3 border border-slate-200 font-semibold text-slate-900 w-1/2">${row.label}</td>
+            <td class="p-3 border border-slate-200 w-1/2">
+              <select id="matrix-select-${idx}" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none">
+                <option value="-1">-- Выберите вариант --</option>
+                ${row.options.map((opt, oIdx) => `<option value="${oIdx}">${opt}</option>`).join('')}
+              </select>
+            </td>
+          </tr>`;
+        });
+        html += `</tbody>`;
+        table.innerHTML = html;
+        interactiveArea.appendChild(table);
+
+      } else if (data.type === "cards_single") {
+        const grid = document.createElement("div");
+        grid.className = "space-y-2.5";
+        
+        data.options.forEach((optText, oIdx) => {
+          const card = document.createElement("label");
+          card.className = "flex items-start space-x-3 p-3.5 bg-slate-50 hover:bg-blue-50/50 border border-slate-200 hover:border-blue-300 rounded-xl cursor-pointer transition active:scale-[0.99]";
+          card.innerHTML = `
+            <input type="radio" name="cards-option" value="${oIdx}" class="mt-1 w-4 h-4 text-blue-600 focus:ring-blue-500 border-slate-300">
+            <span class="text-xs sm:text-sm font-medium text-slate-800 leading-snug">${optText}</span>
+          `;
+          grid.appendChild(card);
+        });
+        interactiveArea.appendChild(grid);
+
+      } else if (data.type === "ordering") {
+        const container = document.createElement("div");
+        container.className = "space-y-2";
+        container.id = "ordering-list-container";
+
+        // Render draggable/movable items
+        data.items.forEach((itemText, idx) => {
+          const item = document.createElement("div");
+          item.className = "ordering-item flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-800 shadow-sm";
+          item.dataset.index = idx;
+          item.innerHTML = `
+            <span class="ordering-text">${itemText}</span>
+            <div class="flex items-center space-x-1 flex-shrink-0 ml-2">
+              <button onclick="moveOrderingItem(this, -1)" class="p-1.5 bg-white border border-slate-300 hover:bg-slate-100 rounded-lg text-slate-700 font-bold text-xs" title="Вверх">▲</button>
+              <button onclick="moveOrderingItem(this, 1)" class="p-1.5 bg-white border border-slate-300 hover:bg-slate-100 rounded-lg text-slate-700 font-bold text-xs" title="Вниз">▼</button>
+            </div>
+          `;
+          container.appendChild(item);
+        });
+        interactiveArea.appendChild(container);
+
+      } else if (data.type === "text_input") {
+        const wrapper = document.createElement("div");
+        wrapper.className = "space-y-2 max-w-md";
+        wrapper.innerHTML = `
+          <input type="text" id="user-text-input" placeholder="Введите ваш ответ здесь..." class="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl font-mono-timer font-bold text-base text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none">
+        `;
+        interactiveArea.appendChild(wrapper);
+      }
+    }
+
+    function moveOrderingItem(btn, direction) {
+      const item = btn.closest(".ordering-item");
+      const container = document.getElementById("ordering-list-container");
+      if (direction === -1 && item.previousElementSibling) {
+        container.insertBefore(item, item.previousElementSibling);
+      } else if (direction === 1 && item.nextElementSibling) {
+        container.insertBefore(item.nextElementSibling, item);
+      }
+    }
+
+    /* ========================================================================
+       ANSWER CHECKING & COOLDOWN LOGIC
+       ======================================================================== */
+    function checkCurrentLevelAnswer() {
+      if (appState.isCooldown) return;
+
+      const data = appState.currentVariantData;
+      let isCorrect = false;
+
+      if (data.type === "matrix") {
+        isCorrect = true;
+        data.rows.forEach((row, idx) => {
+          const sel = document.getElementById(`matrix-select-${idx}`);
+          if (!sel || parseInt(sel.value) !== row.correct) {
+            isCorrect = false;
+          }
+        });
+
+      } else if (data.type === "cards_single") {
+        const selected = document.querySelector('input[name="cards-option"]:checked');
+        if (selected && parseInt(selected.value) === data.correct) {
+          isCorrect = true;
+        }
+
+      } else if (data.type === "ordering") {
+        const items = Array.from(document.querySelectorAll("#ordering-list-container .ordering-item"));
+        const currentOrder = items.map(el => parseInt(el.dataset.index));
+        isCorrect = JSON.stringify(currentOrder) === JSON.stringify(data.correctOrder);
+
+      } else if (data.type === "text_input") {
+        const input = document.getElementById("user-text-input");
+        if (input) {
+          const val = input.value.trim().toUpperCase().replace(/\s+/g, '');
+          const target = data.correctText.trim().toUpperCase().replace(/\s+/g, '');
+          if (val === target) {
+            isCorrect = true;
+          }
+        }
+      }
+
+      if (isCorrect) {
+        handleAnswerSuccess();
+      } else {
+        handleAnswerError();
+      }
+    }
+
+    function handleAnswerSuccess() {
+      if (appState.currentLevel < 3) {
+        appState.currentLevel++;
+        loadLevelQuestion();
+      } else {
+        // Level 3 completed!
+        appState.stagePassed[appState.currentStageIndex] = true;
+        appState.stageScores[appState.currentStageIndex] = 1;
+        updateHeaderUI();
+        openBonusDrill();
+      }
+    }
+
+    function handleAnswerError() {
+      appState.isCooldown = true;
+      const btn = document.getElementById("btn-submit-answer");
+      btn.disabled = true;
+
+      const cooldownBox = document.getElementById("cooldown-box");
+      const secondsDisplay = document.getElementById("cooldown-seconds");
+      const hintDisplay = document.getElementById("cooldown-hint");
+      const progressBar = document.getElementById("cooldown-progress-bar");
+
+      const bookPages = STAGE_CONFIGS[appState.currentStageIndex].bookPages;
+      hintDisplay.textContent = `Подсказка: Внимательно изучите материал в учебнике на стр. ${bookPages}. Проверьте правила и определения.`;
+      
+      cooldownBox.classList.remove("hidden");
+
+      let timeLeft = 6.0;
+      secondsDisplay.textContent = `${timeLeft.toFixed(1)}s`;
+      progressBar.style.width = "100%";
+
+      const intervalMs = 100;
+      cooldownInterval = setInterval(() => {
+        timeLeft -= 0.1;
+        if (timeLeft <= 0) {
+          clearInterval(cooldownInterval);
+          appState.isCooldown = false;
+          btn.disabled = false;
+          hideCooldownBox();
+          // Regenerate with a new random variant!
+          loadLevelQuestion();
+        } else {
+          secondsDisplay.textContent = `${timeLeft.toFixed(1)}s`;
+          progressBar.style.width = `${(timeLeft / 6.0) * 100}%`;
+        }
+      }, intervalMs);
+    }
+
+    function hideCooldownBox() {
+      if (cooldownInterval) clearInterval(cooldownInterval);
+      appState.isCooldown = false;
+      document.getElementById("btn-submit-answer").disabled = false;
+      document.getElementById("cooldown-box").classList.add("hidden");
+    }
+
+    /* ========================================================================
+       BONUS BLITZ SIMULATOR
+       ======================================================================== */
+    const BONUS_QUESTIONS_POOL = [
+      { q: "Как называется минимальный элемент растрового изображения одного цвета на экране?", opts: ["Пиксель", "Кадр", "Сэмпл", "Герц"], correct: 0 },
+      { q: "Какое стандартное соотношение сторон используется для HD-телевизоров и мониторов?", opts: ["16:9", "4:3", "3:2", "1:1"], correct: 0 },
+      { q: "Какой формат аудиофайла не использует сжатие и имеет большой размер?", opts: ["WAV", "MP3", "AAC", "OGG"], correct: 0 },
+      { q: "Какой эффект создает постепенный переход звука от полной тишины к громкому?", opts: ["Fade In", "Fade Out", "Reverb", "Snapshot"], correct: 0 },
+      { q: "Чему равно стандартное разрешение кадра Full HD?", opts: ["1920p × 1080p", "1280 × 720", "800 × 600", "3840 × 2160"], correct: 0 },
+      { q: "Какая стандартная частота дискретизации используется в цифровой аудиозаписи?", opts: ["48 кГц", "44 Гц", "100 кГц", "20 Гц"], correct: 0 },
+      { q: "Какое количество различных значений может принимать 8-битная выборка звука?", opts: ["256", "16", "65 536", "4"], correct: 0 },
+      { q: "Почему формат Flash уступил место MP4 на веб-сайтах?", opts: ["Flash не поддерживался на iPad", "Flash ухудшал звук", "Flash запрещал титры"], correct: 0 },
+      { q: "Как называется извлечение одного кадра из видео в виде отдельного фото?", opts: ["Снимок экрана (Snapshot)", "Рендеринг", "Сэмплирование", "Затухание"], correct: 0 },
+      { q: "Какой эффект отражения звука от стен создает эхо в Audacity?", opts: ["Реверберация (Reverb)", "Fade In", "Trim", "Фильтр"], correct: 0 }
+    ];
+
+    let currentBonusIndex = 0;
+
+    function openBonusDrill() {
+      document.getElementById("screen-stage").classList.add("hidden");
+      document.getElementById("screen-bonus").classList.remove("hidden");
+      document.getElementById("bonus-screen-score").textContent = `+${appState.bonusScore}`;
+      loadNextBonusQuestion();
+    }
+
+    function loadNextBonusQuestion() {
+      const fb = document.getElementById("bonus-feedback-box");
+      fb.className = "hidden";
+
+      const qObj = BONUS_QUESTIONS_POOL[Math.floor(Math.random() * BONUS_QUESTIONS_POOL.length)];
+      document.getElementById("bonus-question-text").textContent = qObj.q;
+
+      const optsContainer = document.getElementById("bonus-options-container");
+      optsContainer.innerHTML = "";
+
+      // Shuffle options visually
+      const shuffledOpts = qObj.opts.map((opt, i) => ({ opt, isCorrect: i === qObj.correct }));
+      shuffledOpts.sort(() => Math.random() - 0.5);
+
+      shuffledOpts.forEach(item => {
+        const btn = document.createElement("button");
+        btn.className = "w-full p-3 bg-slate-50 hover:bg-amber-100/60 border border-slate-200 hover:border-amber-400 rounded-xl text-left font-semibold text-slate-800 text-xs sm:text-sm transition active:scale-[0.99]";
+        btn.textContent = item.opt;
+        btn.onclick = () => handleBonusAnswer(item.isCorrect, btn);
+        optsContainer.appendChild(btn);
+      });
+    }
+
+    function handleBonusAnswer(isCorrect, btn) {
+      const fb = document.getElementById("bonus-feedback-box");
+      if (isCorrect) {
+        appState.bonusScore++;
+        document.getElementById("bonus-screen-score").textContent = `+${appState.bonusScore}`;
+        updateHeaderUI();
+        fb.className = "p-3 rounded-lg text-xs font-bold text-center bg-emerald-100 text-emerald-800 block";
+        fb.textContent = "✓ Верно! +1 бонусный балл";
+        setTimeout(loadNextBonusQuestion, 800);
+      } else {
+        fb.className = "p-3 rounded-lg text-xs font-bold text-center bg-red-100 text-red-800 block";
+        fb.textContent = "✗ Неверно. Пауза 2 секунды...";
+        setTimeout(loadNextBonusQuestion, 2000);
+      }
+    }
+
+    /* ========================================================================
+       FINAL TEACHER SCREEN
+       ======================================================================== */
+    function showFinalTeacherScreen(overrideScore = null) {
+      appState.status = "FINAL";
+      if (timerInterval) clearInterval(timerInterval);
+
+      document.getElementById("screen-waiting").classList.add("hidden");
+      document.getElementById("screen-stage").classList.add("hidden");
+      document.getElementById("screen-bonus").classList.add("hidden");
+      document.getElementById("main-header").classList.add("hidden");
+
+      const finalScreen = document.getElementById("screen-final");
+      finalScreen.classList.remove("hidden");
+
+      const totalScore = overrideScore !== null ? overrideScore : appState.stageScores.reduce((a, b) => a + b, 0);
+
+      // Background color logic: 8-10 Green, 5-7 Amber, 0-4 Red
+      if (totalScore >= 8) {
+        finalScreen.style.backgroundColor = "#15803D"; // Deep Green
+      } else if (totalScore >= 5) {
+        finalScreen.style.backgroundColor = "#B45309"; // Deep Amber
+      } else {
+        finalScreen.style.backgroundColor = "#B91C1C"; // Deep Red
+      }
+
+      document.getElementById("final-score-giant").textContent = `${totalScore} / 10`;
+      document.getElementById("final-bonus-badge").textContent = `+${appState.bonusScore} БОНУСНЫХ БАЛЛОВ`;
+
+      // Render Stage Breakdown Grid
+      const grid = document.getElementById("final-breakdown-grid");
+      grid.innerHTML = "";
+      for (let i = 0; i < 10; i++) {
+        const score = overrideScore !== null ? (i < overrideScore ? 1 : 0) : appState.stageScores[i];
+        const cell = document.createElement("div");
+        cell.className = `p-2 rounded-lg border ${score === 1 ? 'bg-white/20 border-white/40 text-white' : 'bg-black/30 border-white/10 text-white/50'}`;
+        cell.textContent = `Этап ${i + 1}: +${score}`;
+        grid.appendChild(cell);
+      }
+    }
+
+    /* ========================================================================
+       TEACHER MODAL & SHORTCUTS (ALT + S OR 5 CLICKS)
+       ======================================================================== */
+    function handleBadgeClick() {
+      appState.badgeClickCount++;
+      if (appState.badgeClickTimer) clearTimeout(appState.badgeClickTimer);
+
+      appState.badgeClickTimer = setTimeout(() => {
+        appState.badgeClickCount = 0;
+      }, 1500);
+
+      if (appState.badgeClickCount >= 5) {
+        appState.badgeClickCount = 0;
+        toggleTeacherModal(true);
+      }
+    }
+
+    function setupKeyboardShortcuts() {
+      window.addEventListener("keydown", (e) => {
+        if (e.altKey && (e.key === "s" || e.key === "ы" || e.key === "S" || e.key === "Ы")) {
+          e.preventDefault();
+          toggleTeacherModal(true);
+        } else if (e.key === "Escape") {
+          toggleTeacherModal(false);
+        }
+      });
+    }
+
+    function toggleTeacherModal(show) {
+      const modal = document.getElementById("teacher-modal");
+      if (show) {
+        modal.classList.remove("hidden");
+      } else {
+        modal.classList.add("hidden");
+      }
+    }
+
+    function teacherStartLessonNow() {
+      toggleTeacherModal(false);
+      startLesson();
+    }
+
+    function teacherJumpToStage(stageNum) {
+      toggleTeacherModal(false);
+      if (appState.status === "WAITING") {
+        document.getElementById("screen-waiting").classList.add("hidden");
+        document.getElementById("main-header").classList.remove("hidden");
+        appState.status = "LESSON";
+      }
+      loadStage(stageNum - 1);
+    }
+
+    function teacherPassCurrentLevel() {
+      toggleTeacherModal(false);
+      if (appState.status === "LESSON") {
+        handleAnswerSuccess();
+      }
+    }
+
+    function teacherPassCurrentStage() {
+      toggleTeacherModal(false);
+      if (appState.status === "LESSON") {
+        appState.stagePassed[appState.currentStageIndex] = true;
+        appState.stageScores[appState.currentStageIndex] = 1;
+        updateHeaderUI();
+        openBonusDrill();
+      }
+    }
+
+    function teacherShowFinalScreen(testScore) {
+      toggleTeacherModal(false);
+      showFinalTeacherScreen(testScore);
+    }
+  </script>
+</body>
+</html>
